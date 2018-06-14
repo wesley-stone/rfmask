@@ -12,6 +12,11 @@ from time import time
 from helper import *
 from painter import *
 
+OP_BOUND = [0.0, 1.0]
+LODIFF_BOUND = [0.02, 0.6]
+UPDIFF_BOUND = [0.02, 0.6]
+
+
 class Worker():
     def __init__(self, name,s_size,trainer,model_path,global_episodes):
         self.name = "worker_" + str(name)
@@ -110,12 +115,7 @@ class Worker():
                                    self.local_AC.keep_prob: 1.0,
                                    self.local_AC.state_in[0]: rnn_state[0],
                                    self.local_AC.state_in[1]: rnn_state[1]})
-                    pos = np.random.choice(len(conf_f[0]), p=conf_f[0])
-                    y, x, yn, xn = self.__fold(pos)
-                    pred = pred[0][y][x]
-                    operation = np.random.choice(2, p=pred[0])
-                    loDiff = np.random.normal(pred[1], pred[2])
-                    upDiff = np.random.normal(pred[3], pred[4])
+                    y, x, pos, operation, loDiff, upDiff = self.__get_action(conf_f, pred)
                     a = [pos, operation, loDiff, upDiff]
                     r = self.env.make_action(operation, (y, x), loDiff, upDiff)
                     d = self.env.is_episode_finished()
@@ -191,9 +191,17 @@ class Worker():
                     sess.run(self.increment)
                 episode_count += 1
 
+    def __get_action(self, conf_f, pred):
+        pos = np.random.choice(len(conf_f[0]), p=conf_f[0])
+        y, x, yn, xn = self.__fold(pos)
+        pred = pred[0][y][x]
+        print(pred)
+        operation = np.clip(np.random.choice(2, p=(pred[0], 1 - pred[0])), OP_BOUND[0], OP_BOUND[1])
+        loDiff = np.clip(np.random.normal(pred[1], pred[2]), LODIFF_BOUND[0], LODIFF_BOUND[1])
+        upDiff = np.clip(np.random.normal(pred[3], pred[4]), UPDIFF_BOUND[0], UPDIFF_BOUND[1])
+        return yn, xn, pos, operation, loDiff, upDiff
+
     def __fold(self, pos):
-        print(self.local_AC.offset)
-        print(self.env.h)
-        h, w = self.env.h-self.local_AC.offset, self.local_AC.offset
+        h, w = self.env.h-self.local_AC.offset, self.env.w - self.local_AC.offset
         y, x = pos//w, pos%w
         return y, x, y*1.0/h, x*1.0/w

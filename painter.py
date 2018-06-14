@@ -7,12 +7,12 @@ class Painter:
         self.name = name
 
     def load(self, path):
-        self.img = np.zeros(shape=self.size)
+        self.img = np.zeros(shape=self.size, dtype=np.uint8)
         tmp = cv2.imread(path)
         print(self.size)
         cv2.resize(tmp, dsize=(self.size[0], self.size[1]), dst=self.img)
         self.h, self.w = self.img.shape[:2]
-        self.mask = np.zeros((self.h+2, self.w+2), np.uint8)
+        self.mask = np.ones((self.h+2, self.w+2), np.uint8)  # 1 means unmask, 255 means mask
         self.pre_mask = self.mask.copy()
 
     def make_action(self, operation, point, loDiff, upDiff):
@@ -24,21 +24,24 @@ class Painter:
         :param upDiff: floodfill param in [0, 1]
         :return: operation reward
         '''
-        if operation < 0.5: # remove a region
-            flags = 4|cv2.FLOODFILL_MASK_ONLY
+        if operation == 0:  # remove a region
+            flags = 4 | (1 << 8) | cv2.FLOODFILL_MASK_ONLY
         else: # add a region
-            flags = 4|(255<<8)|cv2.FLOODFILL_MASK_ONLY
+            flags = 4 | (255 << 8) | cv2.FLOODFILL_MASK_ONLY
         # transform to image position
         point = (int(point[0]*self.w), int(point[1]*self.h))
         # apply floodfill on mask
-        cv2.floodFill(self.img, self.pre_mask, point, newVal= 0,
-                      loDiff=loDiff, upDiff=upDiff,
+        print(point)
+        print(loDiff)
+        print(upDiff)
+        cv2.floodFill(self.img, self.pre_mask, point, newVal=0,
+                      loDiff=loDiff*255, upDiff=upDiff*255,
                       flags=flags)
         # swap pre_mask and mask
         tmp = self.pre_mask
         self.pre_mask = self.mask
         self.mask = tmp
-        return self._reward()
+        return self.__reward()
 
     def new_episode(self, size):
         self.size = size
