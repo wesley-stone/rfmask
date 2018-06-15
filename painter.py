@@ -1,18 +1,27 @@
 import numpy as np
 import cv2
+from reward import *
+from dataset import *
 
-
-class Painter:
-    def __init__(self, name):
+class Painter(object):
+    def __init__(self, name, data_type='coco', *args):
         self.name = name
+        self.data_type = data_type
+        if self.data_type == 'coco':
+            '''
+            args[0] is the location of annotation json file
+            args[1] is the directory of image files
+            '''
+            self.reward = cocoReward(args[0])
+            self.dataset = cocoDataSet(args[1])
 
     def load(self, path):
         self.img = np.zeros(shape=self.size, dtype=np.uint8)
-        tmp = cv2.imread(path)
-        print(self.size)
-        cv2.resize(tmp, dsize=(self.size[0], self.size[1]), dst=self.img)
+        self.origin = cv2.imread(path)
+        cv2.resize(self.origin, dsize=(self.size[0], self.size[1]), dst=self.img)
         self.h, self.w = self.img.shape[:2]
-        self.mask = np.ones((self.h+2, self.w+2), np.uint8)  # 1 means unmask, 255 means mask
+        self.regularized_img = self.img.astype(dtype=np.float32)/255
+        self.mask = np.ones((self.h+2, self.w+2, 1), dtype=np.uint8)  # 1 means unmask, 255 means mask
         self.pre_mask = self.mask.copy()
 
     def make_action(self, operation, point, loDiff, upDiff):
@@ -24,16 +33,13 @@ class Painter:
         :param upDiff: floodfill param in [0, 1]
         :return: operation reward
         '''
-        if operation == 0:  # remove a region
+        if operation == 0:  # remove a region, set points to 0
+            flags = 4 | (0 << 8) | cv2.FLOODFILL_MASK_ONLY
+        else: # add a region, set points to 1
             flags = 4 | (1 << 8) | cv2.FLOODFILL_MASK_ONLY
-        else: # add a region
-            flags = 4 | (255 << 8) | cv2.FLOODFILL_MASK_ONLY
         # transform to image position
         point = (int(point[0]*self.w), int(point[1]*self.h))
         # apply floodfill on mask
-        print(point)
-        print(loDiff)
-        print(upDiff)
         cv2.floodFill(self.img, self.pre_mask, point, newVal=0,
                       loDiff=loDiff*255, upDiff=upDiff*255,
                       flags=flags)
@@ -41,29 +47,31 @@ class Painter:
         tmp = self.pre_mask
         self.pre_mask = self.mask
         self.mask = tmp
+        print('operation %d (%d, %d) with %f to %f'%(operation, point[0], point[1], loDiff*255, upDiff*255))
         return self.__reward()
 
     def new_episode(self, size):
         self.size = size
         print('another episode!')
-        self.load(self.__next())
+        self.img_path, self.img_id = self.dataset.next()
+        self.load(self.img_path)
+        self.reward.next_episode(self.img_id)
         return
-
 
     def get_state(self):
         return self.mask
 
     def get_image(self):
-        return self.img
+        return self.regularized_img
 
     def is_episode_finished(self):
         return False
 
-
     def __reward(self):
         # compute improvement from pre_mask to mask
-        self.reward = 0.01
-        return self.reward
+        if self.data_type == 'coco':
+            return self.reward.get_reward(self.mask[1:self.size[0]+1, 1:self.size[1]+1])
+        return 0.1, False
 
     def __next(self):
         return 'demo/000000000092.jpg'

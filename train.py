@@ -28,7 +28,7 @@ with tf.device("/cpu:0"):
     workers = []
     # Create worker classes
     for i in range(num_workers):
-        workers.append(Worker(i, s_size, trainer, model_path, global_episodes))
+        workers.append(Worker(i, s_size, trainer, model_path, global_episodes, 'coco', data_path='D:/Datasets/coco'))
     saver = tf.train.Saver(max_to_keep=5)
 
 with tf.Session() as sess:

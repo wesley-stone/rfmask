@@ -17,8 +17,8 @@ LODIFF_BOUND = [0.02, 0.6]
 UPDIFF_BOUND = [0.02, 0.6]
 
 
-class Worker():
-    def __init__(self, name,s_size,trainer,model_path,global_episodes):
+class Worker(object):
+    def __init__(self, name,s_size,trainer,model_path,global_episodes, data_type, data_path, max_episode_num = 10):
         self.name = "worker_" + str(name)
         self.number = name        
         self.model_path = model_path
@@ -30,13 +30,17 @@ class Worker():
         self.episode_mean_values = []
         self.summary_writer = tf.summary.FileWriter("train_"+str(self.number))
         self.input_size = s_size
+        self.max_episode_num = max_episode_num
+        self.img_stack = None
 
         #Create the local copy of the network and the tensorflow op to copy global paramters to local network
         self.local_AC = AC_Network(s_size,self.name,trainer)
         self.update_local_ops = update_target_graph('global',self.name)        
         
         #The Below code is related to setting up the environment
-        self.env = Painter("painter" + str(name))
+        self.env = Painter("painter" + str(name), data_type,
+                           '%s/annotations/instances_train2017.json'%data_path,
+                            '%s/train2017/'%data_path)
         #End set-up
 
     def train(self,rollout,sess,gamma,bootstrap_value):
@@ -59,12 +63,13 @@ class Worker():
 
         # Update the global network using gradients from loss
         # Generate network statistics to periodically save
+        image_tmp = np.repeat(self.env.get_image()[np.newaxis, :, :], len(advantages), axis=0)
         feed_dict = {
             self.local_AC.target_v:discounted_rewards,
-            self.local_AC.image: np.dstack([img]*len(observations)),
-            self.local_AC.mask:np.vstack(observations),
+            self.local_AC.image: image_tmp,
+            self.local_AC.mask: np.stack(observations, axis=0),
             self.local_AC.keep_prob: 0.9,
-            self.local_AC.actions:actions,
+            self.local_AC.actions: np.vstack(actions),
             self.local_AC.advantages:advantages,
             self.local_AC.state_in[0]:self.batch_rnn_state[0],
             self.local_AC.state_in[1]:self.batch_rnn_state[1]}
@@ -117,7 +122,7 @@ class Worker():
                                    self.local_AC.state_in[1]: rnn_state[1]})
                     y, x, pos, operation, loDiff, upDiff = self.__get_action(conf_f, pred)
                     a = [pos, operation, loDiff, upDiff]
-                    r = self.env.make_action(operation, (y, x), loDiff, upDiff)
+                    r, _ = self.env.make_action(operation, (y, x), loDiff, upDiff)
                     d = self.env.is_episode_finished()
                     if not d:
                         s1 = self.env.get_state()
@@ -136,7 +141,8 @@ class Worker():
                     
                     # If the episode hasn't ended, but the experience buffer is full, then we
                     # make an update step using that experience rollout.
-                    if len(episode_buffer) == 30 and d != True and episode_step_count != max_episode_length - 1:
+                    if len(episode_buffer) == self.max_episode_num \
+                            and d != True and episode_step_count != max_episode_length - 1:
                         # Since we don't know what the true final return is, we "bootstrap" from our current
                         # value estimation.
                         v1 = sess.run(
@@ -152,7 +158,8 @@ class Worker():
                         sess.run(self.update_local_ops)
                     if d:
                         break
-                                            
+                if len(episode_values) == 0:
+                    continue
                 self.episode_rewards.append(episode_reward)
                 self.episode_lengths.append(episode_step_count)
                 self.episode_mean_values.append(np.mean(episode_values))
@@ -168,7 +175,7 @@ class Worker():
                         images = np.array(episode_frames)
                         # make_gif(images,'./frames/image'+str(episode_count)+'.gif',
                            # duration=len(images)*time_per_step,true_image=True,salience=False)
-                    if episode_count % 250 == 0 and self.name == 'worker_0':
+                    if episode_count % 5 == 0 and self.name == 'worker_0':
                         saver.save(sess,self.model_path+'/model-'+str(episode_count)+'.cptk')
                         print ("Saved Model")
 
@@ -185,6 +192,7 @@ class Worker():
                     summary.value.add(tag='Losses/Grad Norm', simple_value=float(g_n))
                     summary.value.add(tag='Losses/Var Norm', simple_value=float(v_n))
                     self.summary_writer.add_summary(summary, episode_count)
+                    self.summary_writer.add_graph(tf.get_default_graph())
 
                     self.summary_writer.flush()
                 if self.name == 'worker_0':
@@ -195,7 +203,6 @@ class Worker():
         pos = np.random.choice(len(conf_f[0]), p=conf_f[0])
         y, x, yn, xn = self.__fold(pos)
         pred = pred[0][y][x]
-        print(pred)
         operation = np.clip(np.random.choice(2, p=(pred[0], 1 - pred[0])), OP_BOUND[0], OP_BOUND[1])
         loDiff = np.clip(np.random.normal(pred[1], pred[2]), LODIFF_BOUND[0], LODIFF_BOUND[1])
         upDiff = np.clip(np.random.normal(pred[3], pred[4]), UPDIFF_BOUND[0], UPDIFF_BOUND[1])
