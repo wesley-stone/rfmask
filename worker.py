@@ -13,8 +13,8 @@ from helper import *
 from painter import *
 
 OP_BOUND = [0.0, 1.0]
-LODIFF_BOUND = [0.02, 0.6]
-UPDIFF_BOUND = [0.02, 0.6]
+LODIFF_BOUND = [0.01, 0.1]
+UPDIFF_BOUND = [0.01, 0.1]
 
 
 class Worker(object):
@@ -38,9 +38,11 @@ class Worker(object):
         self.update_local_ops = update_target_graph('global',self.name)        
         
         #The Below code is related to setting up the environment
-        self.env = Painter("painter" + str(name), data_type,
-                           '%s/annotations/instances_train2017.json'%data_path,
-                            '%s/train2017/'%data_path)
+        # for coco
+        # self.env = Painter("painter" + str(name), data_type,
+                           #'%s/annotations/instances_val2017.json'%data_path,
+                            #'%s/val2017/'%data_path)
+        self.env = Painter('painter %d'%name, data_type, data_path)
         #End set-up
 
     def train(self,rollout,sess,gamma,bootstrap_value):
@@ -48,6 +50,7 @@ class Worker(object):
         img = self.env.get_image()
         observations = rollout[:,0]
         actions = rollout[:,1]
+        print()
         rewards = rollout[:,2]
         next_observations = rollout[:,3]
         values = rollout[:,5]
@@ -89,7 +92,7 @@ class Worker(object):
         total_steps = 0
         print ("Starting worker " + str(self.number))
         v_l, p_l, e_l, g_n, v_n = 0,0,0,0,0
-        with sess.as_default(), sess.graph.as_default():                 
+        with sess.as_default(), sess.graph.as_default():
             while not coord.should_stop():
                 sess.run(self.update_local_ops)
                 episode_buffer = []
@@ -110,20 +113,24 @@ class Worker(object):
                 while self.env.is_episode_finished() == False:
                     # Take an action using probabilities from policy network output.
                     print('another step!')
-                    conf_f, pred, v, rnn_state = sess.run(
-                        [self.local_AC.confidence_flatten,
-                         self.local_AC.prediction,
+                    pos, v, op, lo, up, rnn_state = sess.run(
+                        [self.local_AC.point_samples,
                          self.local_AC.value,
-                         self.local_AC.state_out],
+                         self.local_AC.inf_op,
+                         self.local_AC.inf_lo,
+                         self.local_AC.inf_up,
+                         self.local_AC.state_out,],
                         feed_dict={self.local_AC.mask: [s],
                                    self.local_AC.image: [self.env.get_image()],
                                    self.local_AC.keep_prob: 1.0,
                                    self.local_AC.state_in[0]: rnn_state[0],
                                    self.local_AC.state_in[1]: rnn_state[1]})
-                    y, x, pos, operation, loDiff, upDiff = self.__get_action(conf_f, pred)
-                    a = [pos, operation, loDiff, upDiff]
-                    r, _ = self.env.make_action(operation, (y, x), loDiff, upDiff)
-                    d = self.env.is_episode_finished()
+                    # y, x, pos, operation, loDiff, upDiff = self.__get_action(conf_f, pred)
+                    _,_,y,x = self.__fold(pos)
+                    a = [pos[0], op[0], lo[0], up[0]]
+                    r, d = self.env.make_action(op[0], (y[0], x[0]), lo[0], up[0])
+                    print('reward %f'%r)
+
                     if not d:
                         s1 = self.env.get_state()
                         episode_frames.append(s1)
@@ -200,7 +207,9 @@ class Worker(object):
                 episode_count += 1
 
     def __get_action(self, conf_f, pred):
+        print(conf_f[0])
         pos = np.random.choice(len(conf_f[0]), p=conf_f[0])
+        print(pos)
         y, x, yn, xn = self.__fold(pos)
         pred = pred[0][y][x]
         operation = np.clip(np.random.choice(2, p=(pred[0], 1 - pred[0])), OP_BOUND[0], OP_BOUND[1])

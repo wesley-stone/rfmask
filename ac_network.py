@@ -14,26 +14,40 @@ from time import time
 
 VALUE_BETA = 0.5
 ENTROPY_BETA = 0.01
+OP_BOUND = [0.0, 1.0]
+LODIFF_BOUND = [0.01, 0.1]
+UPDIFF_BOUND = [0.01, 0.1]
+
 
 class AC_Network():
-    def __init__(self, img_size, scope, trainer):
+    def __init__(self, img_size, scope, trainer, img_channels=1):
         with tf.variable_scope(scope):
             # Input and visual encoding layers
             with tf.variable_scope('input'):
                 self.input_h = img_size[0]
                 self.input_w = img_size[1]
-                self.image = tf.placeholder(shape=[None,img_size[0], img_size[1], 3],dtype=tf.float32, name='input_image')  # [none, h, w, 3]
-                self.mask = tf.placeholder(shape=[None,img_size[0]+2, img_size[1]+2, 1],dtype=tf.float32, name='input_mask')  # [none, h+2, w+2]
+                self.image = tf.placeholder(shape=[None,img_size[0], img_size[1]],
+                                            dtype=tf.float32, name='input_image')  # [none, h, w]
+                self.mask = tf.placeholder(shape=[None,img_size[0]+2, img_size[1]+2],
+                                           dtype=tf.float32, name='input_mask')  # [none, h+2, w+2]
                 self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')  # for dropout
 
                 # remove edges in mask
-                tmp = tf.image.resize_image_with_crop_or_pad(
-                    self.mask, target_height=img_size[0], target_width=img_size[1])  # [none, h, w]
-                self.imageIn = tf.concat([self.image, tmp], axis=-1, name='input')  # [none, h, w, 4]
+                # tmp = tf.image.resize_image_with_crop_or_pad(
+                    # tf.expand_dims(self.mask, axis=-1), target_height=img_size[0], target_width=img_size[1])  # [none, h, w]
+                tmp = tf.slice(self.mask, [0, 1, 1], [-1, img_size[0], img_size[1]])
+                print(self.mask)
+                print(tmp)
+                self.imageIn = tf.stack([self.image, tmp], axis=-1, name='input')  # [none, h, w, 2]
 
             # unet with rnn for feature extraction and inference
-            mid_feature, self.confidence, self.prediction, self.offset = \
-                self.__unet(self.imageIn, 4, keep_prob=self.keep_prob)
+            mid_feature, len, self.confidence, self.prediction, self.offset = \
+                self.__unet(self.imageIn, img_channels+1, keep_prob=self.keep_prob)
+
+            # rnn to use mid_feature for value prediction
+            print(mid_feature)
+            mid_feature = self.__rnn(mid_feature, len)
+            mid_feature = tf.identity(mid_feature, name='mid_feature')
 
             # Output layers for policy and value estimations
             '''
@@ -57,6 +71,19 @@ class AC_Network():
                     weights_initializer=normalized_columns_initializer(1.0),
                     biases_initializer=None)
 
+                self.point_samples = tf.multinomial(self.confidence_flatten, 1)[:, 0]
+                print(self.point_samples)
+                point_pred = select(self.prediction_flatten, self.point_samples, self.map_size[0] * self.map_size[1])
+                op_pred = point_pred[:, 0]
+                op_prob = tf.stack([op_pred, 1-op_pred], axis=1)
+
+                print(op_prob)
+                self.inf_op = tf.multinomial(op_prob, 1)[:, 0]
+                self.lo_dist = tf.distributions.Normal(point_pred[:, 1], point_pred[:, 2])
+                self.inf_lo = tf.clip_by_value(self.lo_dist.sample(1)[:, 0], LODIFF_BOUND[0], LODIFF_BOUND[1])
+                self.up_dist = tf.distributions.Normal(point_pred[:, 3], point_pred[:, 4])
+                self.inf_up = tf.clip_by_value(self.up_dist.sample(1)[:, 0], UPDIFF_BOUND[0], UPDIFF_BOUND[1])
+
             self.__get_loss(trainer, scope)
 
     def __get_loss(self, trainer, scope):
@@ -70,11 +97,12 @@ class AC_Network():
             self.advantages = tf.placeholder(shape=[None], dtype=tf.float32, name='advantages')
 
             # log(pi)
+            print(self.actions[:, 0])
             prob_point = tf.log(select(self.confidence_flatten,self.actions[:, 0], self.map_size[0]*self.map_size[1]))
             pred = select(self.prediction_flatten, self.actions[:, 0], self.map_size[0]*self.map_size[1])
-            prob_op = tf.log(tf.where(self.actions[:, 0]==1, pred[:, 2], pred[:, 3]))
-            prob_lo = norm_probability(pred[:,1], pred[:,2], self.actions[:, 2])
-            prob_up = norm_probability(pred[:,3], pred[:,4], self.actions[:, 3])
+            prob_op = tf.log(tf.where(self.actions[:, 0]==1, pred[:, 0], 1-pred[:, 0]))
+            prob_lo = self.lo_dist.log_prob(self.actions[:, 2])
+            prob_up = self.up_dist.log_prob(self.actions[:, 3])
             self.responsible_outputs = prob_point + prob_op + prob_lo + prob_up
 
             # Loss functions
@@ -138,9 +166,8 @@ class AC_Network():
             mid_feature = dw_h_convs[layers - 1]
             # insert rnn step for time dependency
             len = size**2 * features
-            mid_feature = self.__rnn(mid_feature, len)
-            mid_feature = tf.identity(mid_feature, name='mid_feature')
             in_node = mid_feature
+
 
             # up layers
             for layer in range(layers - 2, -1, -1):
@@ -183,12 +210,12 @@ class AC_Network():
 
             offset = int(in_size - size)
             self.map_size = (self.input_h - offset, size)
-            return mid_feature, confidence, prediction, offset
+            return tf.layers.flatten(mid_feature), len, confidence, prediction, offset
 
     def __rnn(self, hidden, len, size=256):
         with tf.variable_scope('rnn'):
             shape = tf.shape(hidden)
-            hidden = slim.flatten(hidden)
+            print(shape)
             hidden = slim.fully_connected(hidden, size, activation_fn=tf.nn.elu)
             lstm_cell = tf.contrib.rnn.BasicLSTMCell(size , state_is_tuple=True)
             c_init = np.zeros((1, lstm_cell.state_size.c), np.float32)
@@ -205,9 +232,9 @@ class AC_Network():
                 time_major=False)
             lstm_c, lstm_h = lstm_state
             self.state_out = (lstm_c[:1, :], lstm_h[:1, :])
-            rnn_out = tf.reshape(lstm_outputs, [-1, 256])
+            rnn_out = tf.reshape(lstm_outputs, [-1, size])
             rnn_out = slim.fully_connected(rnn_out, len, activation_fn=tf.nn.elu)
-            rnn_out = tf.reshape(rnn_out, shape=shape)
+            # rnn_out = tf.reshape(rnn_out, shape=shape)
             return rnn_out
 
 

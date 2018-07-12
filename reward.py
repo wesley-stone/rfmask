@@ -56,7 +56,7 @@ class cocoReward(Reward):
         scores = iou([self.rles[self.cur_ins_index]], rle, np.zeros(len(self.rles)))
         incre = scores[0][0]-self.cur_score
         self.cur_score = scores[0][0]
-        print('new incre%f'%incre)
+        print('score %f'%self.cur_score)
 
         instance_stop = self.cur_score>=0.8  # sufficiently good
         if instance_stop:
@@ -65,3 +65,10 @@ class cocoReward(Reward):
             self.cur_ins_index = -1
 
         return incre, self.cur_score>=0.8
+
+
+    def get_reward2(self, *args):
+        mask = args[0]
+
+
+
