@@ -2,16 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6b7539c2-8fc8-48fc-94a4-5547caadc164" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cycle/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cycle/cycle_reword.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cycle/cycle_util.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/rfmask.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/rfmask.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/basenet/provider.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/basenet/train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/basenet/unet.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tf_utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ac_network.py" beforeDir="false" afterPath="$PROJECT_DIR$/ac_network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/painter.py" beforeDir="false" afterPath="$PROJECT_DIR$/painter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reward.py" beforeDir="false" afterPath="$PROJECT_DIR$/reward.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cycle/cycle_util.py" beforeDir="false" afterPath="$PROJECT_DIR$/cycle/cycle_util.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/worker.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -42,38 +40,41 @@
     <select />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
+    <splitter split-orientation="horizontal" split-proportion="0.52139735">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="ac_network.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/ac_network.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="400">
-                  <caret line="73" column="66" selection-start-line="73" selection-start-column="66" selection-end-line="73" selection-end-column="66" />
-                  <folding>
-                    <element signature="e#0#16#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="reward.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/reward.py">
+          <file leaf-file-name="unet.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/basenet/unet.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="144">
-                  <caret line="18" selection-start-line="18" selection-end-line="18" />
+                  <caret line="192" column="24" selection-start-line="192" selection-start-column="24" selection-end-line="192" selection-end-column="24" />
                   <folding>
-                    <element signature="e#0#37#0" expanded="true" />
+                    <element signature="e#672#754#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="cycle_util.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/cycle/cycle_util.py">
+          <file leaf-file-name="train.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/basenet/train.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="752">
-                  <caret line="52" column="34" selection-start-line="52" selection-start-column="34" selection-end-line="52" selection-end-column="34" />
+                <state relative-caret-position="64">
+                  <caret line="4" column="12" selection-start-line="4" selection-start-column="12" selection-end-line="4" selection-end-column="12" />
+                  <folding>
+                    <element signature="e#0#26#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="provider.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/basenet/provider.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-435">
+                  <caret line="32" lean-forward="true" selection-start-line="32" selection-end-line="32" />
+                  <folding>
+                    <element signature="e#0#10#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -81,8 +82,8 @@
           <file leaf-file-name="worker.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/worker.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="336">
-                  <caret line="130" column="49" lean-forward="true" selection-start-line="130" selection-start-column="49" selection-end-line="130" selection-end-column="49" />
+                <state relative-caret-position="369">
+                  <caret line="123" column="71" selection-start-line="123" selection-start-column="71" selection-end-line="123" selection-end-column="71" />
                   <folding>
                     <element signature="e#0#16#0" expanded="true" />
                   </folding>
@@ -93,8 +94,8 @@
           <file leaf-file-name="painter.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/painter.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="416">
-                  <caret line="50" column="26" selection-start-line="50" selection-start-column="26" selection-end-line="50" selection-end-column="26" />
+                <state relative-caret-position="164">
+                  <caret line="80" column="30" selection-start-line="80" selection-start-column="30" selection-end-line="80" selection-end-column="30" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -110,15 +111,6 @@
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="threading.py" pinned="false" current-in-tab="false">
-            <entry file="file://D:/program/anaconda3/Lib/threading.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-8">
-                  <caret line="756" column="8" selection-start-line="756" selection-start-column="8" selection-end-line="756" selection-end-column="8" />
                 </state>
               </provider>
             </entry>
@@ -139,10 +131,35 @@
       </split-first>
       <split-second>
         <leaf>
+          <file leaf-file-name="ac_network.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/ac_network.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="93">
+                  <caret line="32" column="21" selection-start-line="32" selection-start-column="21" selection-end-line="32" selection-end-column="21" />
+                  <folding>
+                    <element signature="e#0#16#0" expanded="true" />
+                    <element signature="e#6263#10130#0" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="cycle_util.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/cycle/cycle_util.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-431">
+                  <caret line="67" selection-start-line="67" selection-end-line="67" />
+                  <folding>
+                    <element signature="e#0#82#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
           <file leaf-file-name="reward.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/reward.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="47">
+                <state relative-caret-position="591">
                   <caret line="56" column="12" selection-start-line="56" selection-start-column="12" selection-end-line="56" selection-end-column="12" />
                   <folding>
                     <element signature="e#0#37#0" expanded="true" />
@@ -151,13 +168,25 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="cycle_reword.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="cycle_reword.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/cycle/cycle_reword.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="239">
-                  <caret line="56" selection-start-line="56" selection-end-line="56" />
+                <state relative-caret-position="303">
+                  <caret line="49" column="40" selection-start-line="49" selection-start-column="40" selection-end-line="49" selection-end-column="40" />
                   <folding>
                     <element signature="e#0#13#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="utils.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/utils.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="625">
+                  <caret line="74" column="4" selection-start-line="74" selection-start-column="4" selection-end-line="74" selection-end-column="4" />
+                  <folding>
+                    <element signature="e#0#16#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -210,7 +239,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/helper.py" />
         <option value="$PROJECT_DIR$/visualization.py" />
         <option value="$PROJECT_DIR$/dataset.py" />
         <option value="$PROJECT_DIR$/cycle.py" />
@@ -221,7 +249,14 @@
         <option value="$PROJECT_DIR$/painter.py" />
         <option value="$PROJECT_DIR$/worker.py" />
         <option value="$PROJECT_DIR$/cycle/cycle_reword.py" />
+        <option value="$PROJECT_DIR$/helper.py" />
+        <option value="$PROJECT_DIR$/tf_utils.py" />
+        <option value="$PROJECT_DIR$/utils.py" />
+        <option value="$PROJECT_DIR$/basenet/unet.py" />
+        <option value="$PROJECT_DIR$/cycle/cycle_util.py" />
         <option value="$PROJECT_DIR$/ac_network.py" />
+        <option value="$PROJECT_DIR$/basenet/train.py" />
+        <option value="$PROJECT_DIR$/basenet/provider.py" />
       </list>
     </option>
   </component>
@@ -255,6 +290,11 @@
             <path>
               <item name="rfmask" type="b2602c69:ProjectViewProjectNode" />
               <item name="rfmask" type="462c0819:PsiDirectoryNode" />
+              <item name="basenet" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="rfmask" type="b2602c69:ProjectViewProjectNode" />
+              <item name="rfmask" type="462c0819:PsiDirectoryNode" />
               <item name="cycle" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -270,6 +310,11 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.highlight.mappings" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.highlight.symlinks" value="true" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.date" value="false" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.permissions" value="false" />
+    <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -292,7 +337,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.train">
+  <component name="RunManager" selected="Python.train (1)">
     <configuration name="cycle" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="rfmask" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -331,7 +376,7 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="dataset" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="provider" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="rfmask" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -339,18 +384,18 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/basenet" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/dataset.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/basenet/provider.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="painter" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="train (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="rfmask" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -358,14 +403,14 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/basenet" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/painter.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/basenet/train.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
@@ -390,18 +435,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.train" />
-      <item itemvalue="Python.dataset" />
-      <item itemvalue="Python.painter" />
       <item itemvalue="Python.cycle" />
       <item itemvalue="Python.cycle_reword" />
+      <item itemvalue="Python.train (1)" />
+      <item itemvalue="Python.provider" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.train (1)" />
+        <item itemvalue="Python.provider" />
         <item itemvalue="Python.train" />
         <item itemvalue="Python.cycle_reword" />
         <item itemvalue="Python.cycle" />
-        <item itemvalue="Python.painter" />
-        <item itemvalue="Python.dataset" />
       </list>
     </recent_temporary>
   </component>
@@ -420,7 +465,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1456" height="876" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" weight="0.3287234" />
@@ -428,10 +472,10 @@
       <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.3293348" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32971507" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.6065129" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.550882" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.3283582" />
-      <window_info anchor="right" id="Remote Host" order="3" />
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4988864" weight="0.17979942" />
+      <window_info anchor="right" id="Remote Host" order="3" weight="0.3295129" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4988864" visible="true" weight="0.17979942" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="4" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3283582" />
@@ -490,10 +534,6 @@
     </watches-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/collections.py" />
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/random_ops.py" />
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/math_ops.py" />
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/contrib/layers/python/layers/layers.py" />
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/distributions/normal.py" />
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/array_ops.py" />
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/gen_array_ops.py" />
@@ -536,13 +576,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2018.1/system/python_stubs/278947499/builtins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="297">
-          <caret line="719" column="6" selection-start-line="719" selection-start-column="6" selection-end-line="719" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://D:/program/anaconda3/Lib/glob.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -554,13 +587,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="289">
           <caret line="198" column="4" selection-start-line="198" selection-start-column="4" selection-end-line="198" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2018.1/system/python_stubs/278947499/numpy/random/mtrand.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="213">
-          <caret line="246" column="57" selection-start-line="246" selection-start-column="57" selection-end-line="246" selection-end-column="57" />
         </state>
       </provider>
     </entry>
@@ -617,20 +643,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="237">
           <caret line="695" column="6" selection-start-line="695" selection-start-column="6" selection-end-line="695" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://D:/program/anaconda3/Lib/site-packages/tensorflow/python/ops/array_ops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="21024">
-          <caret line="1192" column="4" selection-start-line="1192" selection-start-column="4" selection-end-line="1192" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/helper.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1602">
-          <caret line="99" column="70" selection-start-line="99" selection-start-column="70" selection-end-line="99" selection-end-column="70" />
         </state>
       </provider>
     </entry>
@@ -716,44 +728,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2018.1/system/python_stubs/278947499/numpy/core/multiarray.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="201">
-          <caret line="2349" column="4" selection-start-line="2349" selection-start-column="4" selection-end-line="2349" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://D:/program/anaconda3/Lib/site-packages/numpy/core/fromnumeric.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-200">
           <caret line="942" column="4" selection-start-line="942" selection-start-column="4" selection-end-line="942" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cycle/cycle_util.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="752">
-          <caret line="52" column="34" selection-start-line="52" selection-start-column="34" selection-end-line="52" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/cycle/cycle_reword.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="239">
-          <caret line="56" selection-start-line="56" selection-end-line="56" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/reward.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="18" selection-start-line="18" selection-end-line="18" />
-          <folding>
-            <element signature="e#0#37#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -764,32 +742,138 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/worker.py">
+    <entry file="file://$PROJECT_DIR$/tf_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="130" column="49" lean-forward="true" selection-start-line="130" selection-start-column="49" selection-end-line="130" selection-end-column="49" />
+        <state relative-caret-position="-144">
+          <caret column="11" lean-forward="true" selection-start-column="11" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/reward.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="591">
+          <caret line="56" column="12" selection-start-line="56" selection-start-column="12" selection-end-line="56" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="625">
+          <caret line="74" column="4" selection-start-line="74" selection-start-column="4" selection-end-line="74" selection-end-column="4" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cycle/cycle_reword.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="303">
+          <caret line="49" column="40" selection-start-line="49" selection-start-column="40" selection-end-line="49" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2018.1/system/python_stubs/278947499/numpy/random/mtrand.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-64">
+          <caret line="228" column="4" selection-start-line="228" selection-start-column="4" selection-end-line="228" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2018.1/system/python_stubs/278947499/builtins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-584">
+          <caret line="1304" column="6" selection-start-line="1304" selection-start-column="6" selection-end-line="1304" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2018.1/system/python_stubs/278947499/numpy/core/multiarray.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-87">
+          <caret line="2349" column="17" selection-start-line="2349" selection-start-column="17" selection-end-line="2349" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cycle/cycle_util.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-431">
+          <caret line="67" selection-start-line="67" selection-end-line="67" />
+          <folding>
+            <element signature="e#0#82#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/program/anaconda3/Lib/site-packages/tensorflow/python/ops/array_ops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-140">
+          <caret line="1768" column="4" selection-start-line="1768" selection-start-column="4" selection-end-line="1768" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ac_network.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="93">
+          <caret line="32" column="21" selection-start-line="32" selection-start-column="21" selection-end-line="32" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#16#0" expanded="true" />
+            <element signature="e#6263#10130#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/painter.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="416">
-          <caret line="50" column="26" selection-start-line="50" selection-start-column="26" selection-end-line="50" selection-end-column="26" />
+        <state relative-caret-position="164">
+          <caret line="80" column="30" selection-start-line="80" selection-start-column="30" selection-end-line="80" selection-end-column="30" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ac_network.py">
+    <entry file="file://$PROJECT_DIR$/basenet/unet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="400">
-          <caret line="73" column="66" selection-start-line="73" selection-start-column="66" selection-end-line="73" selection-end-column="66" />
+        <state relative-caret-position="144">
+          <caret line="192" column="24" selection-start-line="192" selection-start-column="24" selection-end-line="192" selection-end-column="24" />
+          <folding>
+            <element signature="e#672#754#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/basenet/train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="64">
+          <caret line="4" column="12" selection-start-line="4" selection-start-column="12" selection-end-line="4" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#26#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/worker.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="369">
+          <caret line="123" column="71" selection-start-line="123" selection-start-column="71" selection-end-line="123" selection-end-column="71" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/basenet/provider.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-435">
+          <caret line="32" lean-forward="true" selection-start-line="32" selection-end-line="32" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>

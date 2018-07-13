@@ -4,12 +4,14 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 import scipy.signal
-from helper import *
+from utils import *
+from tf_utils import *
 from collections import OrderedDict
 
 from random import choice
 from time import sleep
 from time import time
+from basenet.unet import create_conv_net
 
 
 VALUE_BETA = 0.5
@@ -42,7 +44,7 @@ class AC_Network():
 
             # unet with rnn for feature extraction and inference
             mid_feature, len, self.confidence, self.prediction, self.offset = \
-                self.__unet(self.imageIn, img_channels+1, keep_prob=self.keep_prob)
+                self.__unet2(self.imageIn, img_channels+1, keep_prob=self.keep_prob)
 
             # rnn to use mid_feature for value prediction
             print(mid_feature)
@@ -141,18 +143,19 @@ class AC_Network():
                 features = 2 ** layer * features_root
                 stddev = np.sqrt(2 / (filter_size ** 2 * features))
                 if layer == 0:
-                    w1 = weight_variable([filter_size, filter_size, channels, features], stddev)
+                    w1 = weight_variable([filter_size, filter_size, channels, features], stddev, name='w1')
                 else:
-                    w1 = weight_variable([filter_size, filter_size, features // 2, features], stddev)
+                    w1 = weight_variable([filter_size, filter_size, features // 2, features], stddev, name='w1')
 
-                w2 = weight_variable([filter_size, filter_size, features, features], stddev)
-                b1 = bias_variable([features])
-                b2 = bias_variable([features])
+                w2 = weight_variable([filter_size, filter_size, features, features], stddev, name='w2')
+                b1 = bias_variable([features], name='b1')
+                b2 = bias_variable([features], name='b2')
 
-                conv1 = conv2d(in_node, w1, keep_prob)
-                tmp_h_conv = tf.nn.relu(conv1 + b1)
-                conv2 = conv2d(tmp_h_conv, w2, keep_prob)
-                dw_h_convs[layer] = tf.nn.relu(conv2 + b2)
+                conv1 = conv2d(in_node, w1, b1, keep_prob)
+                tmp_h_conv = tf.nn.relu(conv1)
+                conv2 = conv2d(tmp_h_conv, w2, b2, keep_prob)
+                dw_h_convs[layer] = tf.nn.relu(conv2)
+
                 unet_weights.append((w1, w2))
                 unet_biases.append((b1, b2))
                 convs.append((conv1, conv2))
@@ -167,7 +170,6 @@ class AC_Network():
             # insert rnn step for time dependency
             len = size**2 * features
             in_node = mid_feature
-
 
             # up layers
             for layer in range(layers - 2, -1, -1):
@@ -211,6 +213,18 @@ class AC_Network():
             offset = int(in_size - size)
             self.map_size = (self.input_h - offset, size)
             return tf.layers.flatten(mid_feature), len, confidence, prediction, offset
+
+    def __unet2(self, x, channels, keep_prob, layers=3, features_root=16, filter_size=3,
+               pool_size=2, summaries=True):
+        output, mid_feature, _, offset, len = create_conv_net(x, keep_prob, channels, 6, layers, features_root, filter_size,
+                        pool_size, summaries)
+        with tf.name_scope("infer"):
+            conf, pred = tf.split(output, [1, 5], -1)
+            conf = tf.exp(conf)
+            conf = conf/tf.reduce_sum(conf, axis=[1,2], keep_dims=True)
+            pred = tf.nn.sigmoid(pred)
+            mid_feature = tf.layers.flatten(mid_feature)
+            return mid_feature, len, conf, pred, offset
 
     def __rnn(self, hidden, len, size=256):
         with tf.variable_scope('rnn'):

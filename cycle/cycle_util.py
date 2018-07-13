@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import cv2
 import os
 
-def create_image_and_label(nx, ny, cnt=10, r_min=5, r_max=80, border=92, sigma=20):
+def create_image_and_label(nx, ny, cnt=10, r_min=5, r_max=80,
+                           border=92, sigma=20):
     image = np.ones((nx, ny, 1))
     label = np.zeros((cnt, nx, ny), dtype=np.bool)
     colors = range(80, 241, (160//cnt))
@@ -62,6 +63,9 @@ def generate_data(root_path, start=0, num=1000, min_cnt=1, max_cnt=5):
         img, labels = create_image_and_label(nx_samples[t], ny_samples[t], cnt_samples[t])
         cv2.imwrite(tpath, img)
         np.save(tapath, labels)
+
+
+
 
 
 def tool_generate_data():
