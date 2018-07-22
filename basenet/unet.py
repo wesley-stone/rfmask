@@ -28,12 +28,13 @@ import logging
 import tensorflow as tf
 from utils import *
 from tf_utils import *
+from basenet.provider import *
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
 
 def create_conv_net(x, keep_prob, channels, n_class, layers=3, features_root=16, filter_size=3, pool_size=2,
-                    summaries=True):
+                    summaries=True, x_size=(512, 512), debug=True):
     """
     Creates a new convolutional unet for the given parametrization.
 
@@ -56,12 +57,15 @@ def create_conv_net(x, keep_prob, channels, n_class, layers=3, features_root=16,
             pool_size=pool_size))
 
     # Placeholder for the input image
+    '''
     with tf.name_scope("preprocessing"):
         nx = tf.shape(x)[1]
         ny = tf.shape(x)[2]
         x_image = tf.reshape(x, tf.stack([-1, nx, ny, channels]))
         in_node = x_image
         batch_size = tf.shape(x_image)[0]
+    '''
+    in_node = x
 
     weights = []
     biases = []
@@ -71,7 +75,7 @@ def create_conv_net(x, keep_prob, channels, n_class, layers=3, features_root=16,
     dw_h_convs = OrderedDict()
     up_h_convs = OrderedDict()
 
-    in_size = 1000
+    in_size = np.array(x_size)
     size = in_size
     # down layers
     for layer in range(0, layers):
@@ -100,12 +104,13 @@ def create_conv_net(x, keep_prob, channels, n_class, layers=3, features_root=16,
             if layer < layers - 1:
                 pools[layer] = max_pool(dw_h_convs[layer], pool_size)
                 in_node = pools[layer]
-                size /= 2
+                size = size/2
 
     mid_map = dw_h_convs[layers - 1]
     in_node = mid_map
-    len = size ** 2 * features
+    mid_shape = (size[0], size[1], features)
 
+    weightds = []
     # up layers
     for layer in range(layers - 2, -1, -1):
         with tf.name_scope("up_conv_{}".format(str(layer))):
@@ -130,6 +135,7 @@ def create_conv_net(x, keep_prob, channels, n_class, layers=3, features_root=16,
             up_h_convs[layer] = in_node
 
             weights.append((w1, w2))
+            weightds.append((wd, bd))
             biases.append((b1, b2))
             convs.append((conv1, conv2))
 
@@ -171,7 +177,14 @@ def create_conv_net(x, keep_prob, channels, n_class, layers=3, features_root=16,
         variables.append(b1)
         variables.append(b2)
 
-    return output_map, mid_map, variables, int(in_size - size), len
+    for wd, bd in weightds:
+        variables.append(wd)
+        variables.append(bd)
+
+    variables.append(weight)
+    variables.append(bias)
+
+    return output_map, mid_map, variables, size.astype(np.int), mid_shape
 
 
 class Unet(object):
@@ -194,7 +207,7 @@ class Unet(object):
         self.y = tf.placeholder("float", shape=[None, None, None, n_class], name="y")
         self.keep_prob = tf.placeholder(tf.float32, name="dropout_probability")  # dropout (keep probability)
 
-        logits, _, self.variables, self.offset, _ = create_conv_net(self.x, self.keep_prob, channels, n_class, **kwargs)
+        logits, _, self.variables, self.output_size, _ = create_conv_net(self.x, self.keep_prob, channels, n_class, **kwargs)
 
         self.cost = self._get_cost(logits, cost, cost_kwargs)
 
@@ -315,7 +328,7 @@ class Trainer(object):
 
     """
 
-    def __init__(self, net, batch_size=1, verification_batch_size = 4, norm_grads=False, optimizer="momentum", opt_kwargs={}):
+    def __init__(self, net, batch_size=8, verification_batch_size=8, norm_grads=False, optimizer="momentum", opt_kwargs={}):
         self.net = net
         self.batch_size = batch_size
         self.verification_batch_size = verification_batch_size
@@ -387,7 +400,7 @@ class Trainer(object):
         return init
 
     def train(self, data_provider, output_path, training_iters=10, epochs=100, dropout=0.75, display_step=1,
-              restore=False, write_graph=False, prediction_path='prediction'):
+              restore=True, write_graph=False, prediction_path='prediction'):
         """
         Lauches the training process
 
@@ -418,6 +431,7 @@ class Trainer(object):
                 if ckpt and ckpt.model_checkpoint_path:
                     self.net.restore(sess, ckpt.model_checkpoint_path)
 
+            # test_x, test_y = data_provider(self.verification_batch_size)
             test_x, test_y = data_provider(self.verification_batch_size)
             pred_shape = self.store_prediction(sess, test_x, test_y, "_init")
 
@@ -431,8 +445,8 @@ class Trainer(object):
                     batch_x, batch_y = data_provider(self.batch_size)
 
                     # Run optimization op (backprop)
-                    _, loss, lr, gradients = sess.run(
-                        (self.optimizer, self.net.cost, self.learning_rate_node, self.net.gradients_node),
+                    _, loss, prediction, lr, gradients = sess.run(
+                        (self.optimizer,self.net.cost, self.net.predicter, self.learning_rate_node, self.net.gradients_node),
                         feed_dict={self.net.x: batch_x,
                                    self.net.y: crop_to_shape(batch_y, pred_shape),
                                    self.net.keep_prob: dropout})
@@ -469,8 +483,11 @@ class Trainer(object):
         logging.info("Verification error= {:.1f}%, loss= {:.4f}".format(error_rate(
             prediction, crop_to_shape(batch_y, prediction.shape)), loss))
 
-        img = combine_img_prediction(batch_x, batch_y, prediction)
-        save_image(img, "%s/%s.jpg" % (self.prediction_path, name))
+        #if name != '_init':
+            #render_label(prediction, batch_x.shape[0])
+
+        img = combine_img_prediction(batch_x[:,:,:,0:1], batch_y, prediction)
+        save_image(img[..., 0], "%s/%s.jpg" % (self.prediction_path, name))
 
         return pred_shape
 
@@ -483,13 +500,15 @@ class Trainer(object):
         summary_str, loss, acc, predictions = sess.run([self.summary_op,
                                                         self.net.cost,
                                                         self.net.accuracy,
-                                                        self.net.predicter],
+                                                        self.net.predicter,],
                                                        feed_dict={self.net.x: batch_x,
                                                                   self.net.y: batch_y,
                                                                   self.net.keep_prob: 1.})
         summary_writer.add_summary(summary_str, step)
         summary_writer.flush()
-        logging.info("Iter {:}, Minibatch Loss= {:.4f}, Training Accuracy= {:.4f}, Minibatch error= {:.1f}%"
+
+        logging.info("Iter {:}, Minibatch Loss= {:.4f}, Training Accuracy= {:.4f}, "
+                     "Minibatch error= {:.1f}%"
                      .format(step, loss, acc, error_rate(predictions,
                                                          batch_y)))
 

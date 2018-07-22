@@ -105,6 +105,7 @@ class AC_Network():
                                                                          features_root, filter_size, pool_size,
                                                                          summaries, debug=self.debug)
             mid_feature = tf.layers.flatten(mid_feature)
+            self.origin_output = output
             pred_map = pixel_wise_softmax(output)[...,1]
             if self.debug:
                 pred_map = tf.Print(pred_map, [pred_map, tf.shape(pred_map)])

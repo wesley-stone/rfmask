@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 from cycle import cycle_util
 
+
 class cycleReward(reward.Reward):
 
     def __init__(self, root_path, size=None, shuffle = 1000):
@@ -35,6 +36,8 @@ class cycleReward(reward.Reward):
         self.ann_visit = np.zeros(self.ann_cnt, dtype=np.int8)
 
         if self.size != None:
+            self.size_zeros = np.zeros(self.size, dtype=np.float32)
+            self.size_ones = np.ones(self.size, dtype=np.float32)
             self._resize()
 
         return self.img, self.anns
@@ -61,16 +64,16 @@ class cycleReward(reward.Reward):
                 if self.ann_visit[i]:
                     # have visited
                     continue
-                scores.append(iou(mask, self.anns[i]))
+                scores.append(self.iou(mask, self.anns[i]))
             target = np.argmax(scores)
             self.cur_ins_iou = scores[target]
             if scores[target] == 0:
-                # do not need to try again
+                # do not need to try any more
                 return 0.0, False
             else:
                 self.cur_ins_index = target
                 return scores[target], True
-        score = iou(mask, self.anns[self.cur_ins_index])
+        score = self.iou(mask, self.anns[self.cur_ins_index])
         reward = score - self.cur_ins_iou
         self.cur_ins_iou = score
         if score < 0.9 or reward > 0:
@@ -82,11 +85,16 @@ class cycleReward(reward.Reward):
             self.ann_visit[self.cur_ins_index] = 1
             return reward, False
 
+    def get_gt(self):
+        if self.cur_ins_index == -1:
+            return np.zeros(shape=self.size)
+        return self.anns[self.cur_ins_index]
 
-def iou(mask1, mask2):
-    m1 = np.sum(mask1 & mask2)
-    m2 = np.sum(mask1 | mask2)
-    return m1 * 1.0 / m2
+
+    def iou(self, mask1, mask2):
+        m1 = np.sum(np.where((mask1 == 1) & (mask2 == 1), self.size_ones, self.size_zeros))
+        m2 = np.sum(np.where((mask1 == 0) & (mask2 == 0), self.size_zeros, self.size_ones))
+        return m1 * 1.0 / m2
 
 
 import matplotlib.pyplot as plt

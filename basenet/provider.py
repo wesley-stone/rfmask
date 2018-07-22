@@ -47,7 +47,7 @@ class BaseDataProvider:
             ny = label.shape[0]
             labels = np.zeros((ny, nx, self.n_class), dtype=np.float32)
             labels[..., 1] = label
-            labels[..., 0] = ~label
+            labels[..., 0] = 1 - label
             return labels
 
         return label
@@ -69,6 +69,8 @@ class BaseDataProvider:
         return data, labels
 
     def __call__(self, n):
+        '''
+
         train_data, labels = self._load_data_and_label()
         nx = train_data.shape[1]
         ny = train_data.shape[2]
@@ -84,8 +86,14 @@ class BaseDataProvider:
             Y[i] = labels
 
         return X, Y
+        '''
+        return self._next_batch(n)
+
 
     def _next_data(self):
+        raise NotImplementedError()
+
+    def _next_batch(self, batch_size):
         raise NotImplementedError()
 
 
@@ -93,7 +101,7 @@ class cycleProvider(BaseDataProvider):
     channels = 2
     n_class = 2
 
-    def __init__(self, nx, ny, path=None):
+    def __init__(self, nx, ny, path=None, load_to_mem=False):
         super(cycleProvider, self).__init__()
         self.nx = nx
         self.ny = ny
@@ -108,13 +116,42 @@ class cycleProvider(BaseDataProvider):
                 self.img_path = [os.path.join(img_pth, '%s.jpg'%l) for l in ls]
                 self.ann_path = [os.path.join(ann_pth, '%s.npy'%l) for l in ls]
             self.size = len(self.img_path)
+            if load_to_mem:
+                # load all data to the mem
+                print('data loading starting...')
+                self.imgs = np.zeros((self.size, self.ny, self.nx, 2), dtype=np.float32)
+                self.anns = np.zeros((self.size, self.ny, self.nx, 2), dtype=np.float32)
+                for n in range(self.size):
+                    tmp_img = cv2.imread(self.img_path[n], cv2.IMREAD_GRAYSCALE)
+                    tmp_anns = np.load(self.ann_path[n])
+                    cnt = tmp_anns.shape[0]
+                    size = tmp_anns.shape[1:]
 
+                    s_label = np.zeros(size, dtype=np.bool)
+                    for i in range(cnt):
+                        s_label = np.logical_or(s_label, tmp_anns[i])
+                    rimg, s_label = self.resize(tmp_img, s_label)
+                    # replicate to 2 channels
+                    self.imgs[n,:,:,0] = rimg
+                    # set second channel to 0
+                    self.imgs[n,:,:,1] = 0
+                    self.anns[n,:,:,1] = s_label
+                    self.anns[n,:,:,0] = 1 - s_label
+                    if n % 1000 == 0:
+                        print('%d.th image has been loaded...'%n)
+                # img normalization
+                print('image normalization...')
+                mins = np.amin(self.imgs, axis=(1,2,3), keepdims=True)
+                maxs = np.amax(self.imgs, axis=(1,2,3), keepdims=True)
+                self.imgs = (self.imgs - mins)/maxs
+                print('data loading finished...')
 
     def _next_data(self):
         if self.path is None:
             img, label = cycle_util.create_image_and_label(self.nx, self.ny)
         else:
             img, label = self._random_select_from_file()
+
         cnt = label.shape[0]
         size = label.shape[1:]
         s_label = np.zeros(size, dtype=np.bool)
@@ -122,10 +159,14 @@ class cycleProvider(BaseDataProvider):
             s_label = np.logical_or(s_label, label[i])
         img, s_label = self.resize(img, s_label)
         # replicate to 2 channels
-        dimg = np.zeros((self.ny, self.nx, 2), np.float32)
-        dimg[..., 0] = img/255.0
-        dimg[..., 1] = dimg[..., 0]
+        dimg = np.zeros((self.ny, self.nx, 2), np.uint8)
+        dimg[..., 0] = img
+        dimg[..., 1] = np.zeros(img.shape, dtype=np.uint8)
         return dimg, s_label
+
+    def _next_batch(self, batch_size):
+        idx = np.random.choice(self.size, size=batch_size)
+        return self.imgs[idx], self.anns[idx]
 
     def _random_select_from_file(self):
         idx = np.random.choice(self.size)
@@ -144,6 +185,43 @@ class cycleProvider(BaseDataProvider):
         cv2.resize(img, dsize=(self.ny, self.nx), dst=itmp,
                    interpolation=cv2.INTER_CUBIC)
         return itmp, tmp
+
+
+def render(imgs, labels, num):
+    # imgs = np.squeeze(imgs[..., 0:1])
+    imgs = imgs[..., 0]
+    for i in range(num):
+        ish = plt.imshow(imgs[i])
+        ish.set_cmap('gray')
+        plt.show()
+        ish = plt.imshow(labels[i, :, :, 0])
+        ish.set_cmap('gray')
+        plt.show()
+        ish = plt.imshow(labels[i, :, :, 1])
+        ish.set_cmap('gray')
+        plt.show()
+
+
+def render_labels(labels, num):
+    for i in range(num):
+        if labels.ndim == 4:
+            ish = plt.imshow(labels[i, :, :, 1])
+            ish.set_cmap('gray')
+            plt.show()
+            ish = plt.imshow(labels[i, :, :, 0])
+            ish.set_cmap('gray')
+            plt.show()
+        else:
+            ish = plt.imshow(labels[i, :, :])
+            ish.set_cmap('gray')
+            plt.show()
+
+
+def render_gray(img):
+    ish = plt.imshow(img)
+    ish.set_cmap('gray')
+    plt.show()
+
 
 
 if __name__ == '__main__':

@@ -10,6 +10,9 @@ load_model = False
 load_base = True
 model_path = './model'
 base_path = './basenet/unet_trained'
+use_gpu = True
+list_gpu = (1,)
+num_workers = 1
 
 tf.reset_default_graph()
 
@@ -26,13 +29,21 @@ with tf.device("/cpu:0"):
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
     master_network = AC_Network(s_size, 'global', None, debug=True)  # Generate global network
     # num_workers = multiprocessing.cpu_count()  # Set workers to number of available CPU threads
-    num_workers = 1
-    workers = []
-    # Create worker classes
-    for i in range(num_workers):
-        workers.append(Worker(i, s_size, trainer, model_path, global_episodes, 'cycle', data_path='D:\\Datasets\\cycle',
-                              debug=True))
     saver = tf.train.Saver(max_to_keep=5)
+    workers = []
+    if not use_gpu:
+        # Create worker classes
+        for i in range(num_workers):
+            workers.append(Worker(i, s_size, trainer, model_path, global_episodes, 'cycle', data_path='D:\\Datasets\\cycle',
+                                  debug=True))
+
+if use_gpu:
+    for i in list_gpu:
+        i_device = '/job:localhost/replica:0/task:0/device:GPU:%d'%i
+        with tf.device(i_device):
+            workers.append(Worker(i, s_size, trainer, model_path, global_episodes, 'cycle', data_path='D:\\Datasets\\cycle',
+                                  debug=True))
+
 
 with tf.Session() as sess:
     coord = tf.train.Coordinator()
@@ -54,8 +65,12 @@ with tf.Session() as sess:
     # This is where the asynchronous magic happens.
     # Start the "work" process for each worker in a separate threat.
     worker_threads = []
-    for worker in workers:
-        worker_work = lambda: worker.work(max_episode_length, gamma, sess, coord, saver)
+    for i in range(len(workers)):
+        worker = workers[i]
+        w_config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True,
+                                  gpu_options=tf.GPUOptions(allow_growth=True))
+        w_sess = tf.Session(config=w_config)
+        worker_work = lambda: worker.work(max_episode_length, gamma, w_sess, coord, saver)
         t = threading.Thread(target=(worker_work))
         t.start()
         sleep(0.5)

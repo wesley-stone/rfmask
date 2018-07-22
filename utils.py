@@ -22,7 +22,7 @@ def discount(x, gamma):
     return scipy.signal.lfilter([1], [1, -gamma], x[::-1], axis=0)[::-1]
 
 
-def combine_img_prediction(data, gt, pred):
+def combine_img_prediction(data, gt, pred, rgb=False):
     """
     Combines the data, grouth thruth and the prediction into one rgb image
 
@@ -34,19 +34,28 @@ def combine_img_prediction(data, gt, pred):
     """
     ny = pred.shape[2]
     ch = data.shape[3]
-    img = np.concatenate((to_rgb(crop_to_shape(data, pred.shape).reshape(-1, ny, ch)),
-                          to_rgb(crop_to_shape(gt[..., 1], pred.shape).reshape(-1, ny, 1)),
-                          to_rgb(pred[..., 1].reshape(-1, ny, 1))), axis=1)
+    if rgb:
+        img = np.concatenate((to_rgb(crop_to_shape(data, pred.shape).reshape(-1, ny, ch)),
+                              to_rgb(crop_to_shape(gt[..., 1], pred.shape).reshape(-1, ny, 1)),
+                              to_rgb(pred[..., 1].reshape(-1, ny, 1))), axis=1)
+    else:
+        img = np.concatenate((crop_to_shape(data, pred.shape).reshape(-1, ny, ch),
+                              crop_to_shape(gt[..., 1], pred.shape).reshape(-1, ny, 1),
+                              pred[..., 1].reshape(-1, ny, 1)), axis=1)
+
+    return img
+
+def combine_to_display(data, gt, pred):
+    img = np.concatenate((data, gt, pred), axis=1)
     return img
 
 
 def save_image(img, path):
     """
     Writes the image to disk
-
-    :param img: the rgb image to save
-    :param path: the target path
     """
+    if np.amax(img) <= 1:
+        img = img*255
     Image.fromarray(img.round().astype(np.uint8)).save(path, 'JPEG', dpi=[300, 300], quality=90)
 
 

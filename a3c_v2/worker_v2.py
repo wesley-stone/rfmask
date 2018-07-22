@@ -105,8 +105,10 @@ class Worker(object):
                 while d:
                     # Take an action using probabilities from policy network output.
                     print('another step.')
-                    m, v, rnn_state = sess.run(
+                    m, conf, or_op, v, rnn_state = sess.run(
                         [self.local_AC.mask_sample,
+                         self.local_AC.confidence,
+                         self.local_AC.origin_output,
                          self.local_AC.value,
                          self.local_AC.state_out,],
                         feed_dict={self.local_AC.mask: [s],
@@ -114,6 +116,7 @@ class Worker(object):
                                    self.local_AC.keep_prob: 1.0,
                                    self.local_AC.state_in[0]: rnn_state[0],
                                    self.local_AC.state_in[1]: rnn_state[1]})
+
                     # y, x, pos, operation, loDiff, upDiff = self.__get_action(conf_f, pred)
                     r, d = self.env.make_action(m[0])
                     time.sleep(1)
