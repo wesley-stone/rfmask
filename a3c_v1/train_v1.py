@@ -1,14 +1,15 @@
-import tensorflow as tf
-import os
-from ac_network import *
-from worker import *
+from a3c.a3c_v1 import *
+from a3c.worker_v1 import *
+import basenet.transfer as transfer
 
 
 max_episode_length = 300
 gamma = .99 # discount rate for advantage estimation and reward discounting
 s_size = (512, 512) # Observations are greyscale frames of 84 * 84 * 1
 load_model = False
+load_base = True
 model_path = './model'
+base_path = './basenet/unet_trained'
 
 tf.reset_default_graph()
 
@@ -23,7 +24,7 @@ with tf.device("/cpu:0"):
     global_episodes = tf.Variable(0, dtype=tf.int32, name='global_episodes',
                                   trainable=False)
     trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
-    master_network = AC_Network(s_size, 'global', None)  # Generate global network
+    master_network = AC_Network(s_size, 'global', None, debug=False)  # Generate global network
     # num_workers = multiprocessing.cpu_count()  # Set workers to number of available CPU threads
     num_workers = 1
     workers = []
@@ -41,7 +42,15 @@ with tf.Session() as sess:
         ckpt = tf.train.get_checkpoint_state(model_path)
         saver.restore(sess, ckpt.model_checkpoint_path)
     else:
-        sess.run(tf.global_variables_initializer())
+        # sess.run(tf.global_variables_initializer())
+        w1 = tf.get_default_graph().get_tensor_by_name('global/unet/down_conv_0/w1:0')
+        print_op = tf.Print(w1, [w1])
+        inited = None
+        if load_base:
+            inited = transfer.param_transfer(sess, base_path, master_network.unet_var_dict)
+            sess.run(print_op)
+        transfer.guarantee_initialized_variables(sess, inited)
+        sess.run(print_op)
 
     # This is where the asynchronous magic happens.
     # Start the "work" process for each worker in a separate threat.

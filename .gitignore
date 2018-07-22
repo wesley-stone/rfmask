@@ -106,3 +106,9 @@ venv.bak/
 # image file
 .jpg
 .png
+
+# training files
+basenet/unet_trained
+basenet/prediction
+train_0/
+train_1/
