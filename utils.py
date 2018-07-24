@@ -56,6 +56,8 @@ def save_image(img, path):
     """
     if np.amax(img) <= 1:
         img = img*255
+    if len(img.shape) > 2:
+        img = np.squeeze(img)
     Image.fromarray(img.round().astype(np.uint8)).save(path, 'JPEG', dpi=[300, 300], quality=90)
 
 

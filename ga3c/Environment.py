@@ -31,13 +31,11 @@ from ga3c.GameManager import GameManager
 
 
 class Environment:
-    def __init__(self):
-        self.game = GameManager(Config.ATARI_GAME, display=Config.PLAY_MODE)
+    def __init__(self, display=False):
+        self.game = GameManager(Config.ATARI_GAME, display=display)
         self.previous_state = None
         self.current_state = None
         self.total_reward = 0
-
-        self.reset()
 
     def _update_state(self, observation):
         x_ = np.array(observation)

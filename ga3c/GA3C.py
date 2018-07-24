@@ -38,16 +38,5 @@ def main():
         x, y = sys.argv[i].split('=')
         setattr(Config, x, type(getattr(Config, x))(y))
 
-    # Adjust configs for Play mode
-    if Config.PLAY_MODE:
-        Config.AGENTS = 1
-        Config.PREDICTORS = 1
-        Config.TRAINERS = 1
-        Config.DYNAMIC_SETTINGS = False
-
-        Config.LOAD_CHECKPOINT = False
-        Config.TRAIN_MODELS = False
-        Config.SAVE_MODELS = False
-
     # Start main program
     Server().main()

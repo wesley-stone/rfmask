@@ -328,7 +328,7 @@ class Trainer(object):
 
     """
 
-    def __init__(self, net, batch_size=8, verification_batch_size=8, norm_grads=False, optimizer="momentum", opt_kwargs={}):
+    def __init__(self, net, batch_size=48, verification_batch_size=64, norm_grads=False, optimizer="momentum", opt_kwargs={}):
         self.net = net
         self.batch_size = batch_size
         self.verification_batch_size = verification_batch_size
@@ -338,7 +338,7 @@ class Trainer(object):
 
     def _get_optimizer(self, training_iters, global_step):
         if self.optimizer == "momentum":
-            learning_rate = self.opt_kwargs.pop("learning_rate", 0.2)
+            learning_rate = self.opt_kwargs.pop("learning_rate", 0.1)
             decay_rate = self.opt_kwargs.pop("decay_rate", 0.95)
             momentum = self.opt_kwargs.pop("momentum", 0.2)
 
@@ -487,7 +487,7 @@ class Trainer(object):
             #render_label(prediction, batch_x.shape[0])
 
         img = combine_img_prediction(batch_x[:,:,:,0:1], batch_y, prediction)
-        save_image(img[..., 0], "%s/%s.jpg" % (self.prediction_path, name))
+        save_image(img[..., 0], "basenet/%s/%s.jpg" % (self.prediction_path, name))
 
         return pred_shape
 

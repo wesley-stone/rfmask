@@ -36,7 +36,9 @@ def guarantee_initialized_variables(session, inited, list_of_variables = None):
         for v in list_of_variables:
             if v not in inited:
                 uninited.append(v)
-        session.run(tf.variables_initializer(uninited))
+                print(v)
+        if len(uninited):
+            session.run(tf.variables_initializer(uninited))
 
 
 if __name__ == '__main__':

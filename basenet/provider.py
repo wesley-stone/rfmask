@@ -116,6 +116,7 @@ class cycleProvider(BaseDataProvider):
                 self.img_path = [os.path.join(img_pth, '%s.jpg'%l) for l in ls]
                 self.ann_path = [os.path.join(ann_pth, '%s.npy'%l) for l in ls]
             self.size = len(self.img_path)
+            self.size = 500
             if load_to_mem:
                 # load all data to the mem
                 print('data loading starting...')

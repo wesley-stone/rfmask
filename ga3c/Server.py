@@ -48,6 +48,9 @@ class Server:
         self.model = NetworkVP(Config.DEVICE, Config.NETWORK_NAME)
         if Config.LOAD_CHECKPOINT:
             self.stats.episode_count.value = self.model.load()
+        elif Config.PRE_TRAIN:
+            # train from unet
+            self.model.pre_train()
 
         self.training_step = 0
         self.frame_counter = 0
@@ -57,9 +60,9 @@ class Server:
         self.trainers = []
         self.dynamic_adjustment = ThreadDynamicAdjustment(self)
 
-    def add_agent(self):
+    def add_agent(self, display=False):
         self.agents.append(
-            ProcessAgent(len(self.agents), self.prediction_q, self.training_q, self.stats.episode_log_q))
+            ProcessAgent(len(self.agents), self.prediction_q, self.training_q, self.stats.episode_log_q, display=display))
         self.agents[-1].start()
 
     def remove_agent(self):

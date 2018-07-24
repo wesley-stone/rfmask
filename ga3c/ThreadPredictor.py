@@ -48,7 +48,6 @@ class ThreadPredictor(Thread):
             dtype=np.float32)
 
         while not self.exit_flag:
-            print('get prediction_q')
             ids[0], states[0] = self.server.prediction_q.get()
 
             size = 1
@@ -56,7 +55,6 @@ class ThreadPredictor(Thread):
                 ids[size], states[size] = self.server.prediction_q.get()
                 size += 1
 
-            print(ids)
             batch = states[:size]
             p, v = self.server.model.predict_p_and_v(batch)
 

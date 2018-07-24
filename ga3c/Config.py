@@ -30,30 +30,36 @@ class Config:
     # Game configuration
 
     # Name of the game, with version (e.g. PongDeterministic-v0)
-    ATARI_GAME = 'PongDeterministic-v0'
+    ATARI_GAME = 'wesley_circle'
 
-    # Enable to see the trained agent in action
-    PLAY_MODE = False
+    # play mode
+    # 0: no display
+    # 1: only one display
+    # 2: all agents display
+    PLAY_MODE = 1
+
     # Enable to train
     TRAIN_MODELS = True
     # Load old models. Throws if the model doesn't exist
     LOAD_CHECKPOINT = False
     # If 0, the latest checkpoint is loaded
-    LOAD_EPISODE = 0 
+    LOAD_EPISODE = 0
+
+    PRE_TRAIN = True
 
     #########################################################################
     # Number of agents, predictors, trainers and other system settings
     
     # If the dynamic configuration is on, these are the initial values.
     # Number of Agents
-    AGENTS = 16
+    AGENTS = 1
     # Number of Predictors
     PREDICTORS = 1
     # Number of Trainers
     TRAINERS = 1
 
     # Device
-    DEVICE = 'gpu:0'
+    DEVICE = 'gpu:1'
 
     # Enable the dynamic adjustment (+ waiting time to start it)
     DYNAMIC_SETTINGS = True
@@ -67,7 +73,7 @@ class Config:
     DISCOUNT = 0.99
     
     # Tmax
-    TIME_MAX = 5
+    TIME_MAX = 2
     
     # Reward Clipping
     REWARD_MIN = -1
@@ -75,7 +81,7 @@ class Config:
 
     # Max size of the queue
     MAX_QUEUE_SIZE = 100
-    PREDICTION_BATCH_SIZE = 8
+    PREDICTION_BATCH_SIZE = 4
 
     # Input of the DNN
     STACKED_FRAMES = 2
@@ -109,7 +115,7 @@ class Config:
     # Epsilon (regularize policy lag in GA3C)
     LOG_EPSILON = 1e-6
     # Training min batch size - increasing the batch size increases the stability of the algorithm, but make learning slower
-    TRAINING_MIN_BATCH_SIZE = 0
+    TRAINING_MIN_BATCH_SIZE = 4
     
     #########################################################################
     # Log and save
@@ -125,7 +131,7 @@ class Config:
     SAVE_FREQUENCY = 1000
     
     # Print stats every PRINT_STATS_FREQUENCY episodes
-    PRINT_STATS_FREQUENCY = 100
+    PRINT_STATS_FREQUENCY = 5
     # The window to average stats
     STAT_ROLLING_MEAN_WINDOW = 1000
 
@@ -146,3 +152,5 @@ class Config:
     ENTROPY_BETA = 0.01
 
     KEEP_PROB = 0.9
+
+    BASE_MODEL_PATH = './basenet/unet_trained'

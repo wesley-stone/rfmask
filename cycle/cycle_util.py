@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 import cv2
 import os
 
+import threading
+from time import sleep
+
+
 def create_image_and_label(nx, ny, cnt=10, r_min=5, r_max=80,
                            border=92, sigma=20):
     image = np.ones((nx, ny, 1))
@@ -65,9 +69,6 @@ def generate_data(root_path, start=0, num=1000, min_cnt=1, max_cnt=5):
         np.save(tapath, labels)
 
 
-
-
-
 def tool_generate_data():
     start = 0
     num = 500
@@ -92,6 +93,7 @@ def tool_generate_list(pth):
             l = l.split('.')[0]
             f.write(l + '\n')
 
+
 def tool_show_data(img, anns, cnt):
     ish = plt.imshow(img)
     ish.set_cmap('gray')
@@ -102,12 +104,10 @@ def tool_show_data(img, anns, cnt):
         ish.set_cmap('gray')
         plt.show()
 
-import threading
-from time import sleep
 
 if __name__== '__main__':
-    tool_generate_list('D:/Datasets/cycle')
-    # tool_generate_data()
+    # tool_generate_list('D:/Datasets/cycle')
+    tool_generate_data()
     '''read data'''
     '''
     img = cv2.imread('/Users/redrock/cycle_data/img/000001.jpg', flags=cv2.IMREAD_GRAYSCALE)

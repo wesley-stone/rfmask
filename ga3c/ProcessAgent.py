@@ -36,7 +36,7 @@ from ga3c.Experience import Experience
 
 
 class ProcessAgent(Process):
-    def __init__(self, id, prediction_q, training_q, episode_log_q):
+    def __init__(self, id, prediction_q, training_q, episode_log_q, display=False):
         super(ProcessAgent, self).__init__()
 
         self.id = id
@@ -44,7 +44,7 @@ class ProcessAgent(Process):
         self.training_q = training_q
         self.episode_log_q = episode_log_q
 
-        self.env = Environment()
+        self.env = Environment(display=display)
 
         self.discount_factor = Config.DISCOUNT
         # one frame at a time
@@ -60,7 +60,8 @@ class ProcessAgent(Process):
             experiences[t].reward = reward_sum
         return experiences[:-1]
 
-    def convert_data(self, experiences):
+    @staticmethod
+    def convert_data(experiences):
         x_ = np.array([exp.state for exp in experiences])
         a_ = np.array([exp.action for exp in experiences])
         r_ = np.array([exp.reward for exp in experiences])
@@ -68,7 +69,7 @@ class ProcessAgent(Process):
 
     def predict(self, state):
         # put the state in the prediction q
-        print('agent0 put one prediction')
+        # print('agent%d put one prediction'%self.id)
         self.prediction_q.put((self.id, state))
         # wait for the prediction to come back
         p, v = self.wait_q.get()
@@ -99,6 +100,7 @@ class ProcessAgent(Process):
 
                 updated_exps = ProcessAgent._accumulate_rewards(experiences, self.discount_factor, terminal_reward)
                 x_, r_, a_ = self.convert_data(updated_exps)
+
                 yield x_, r_, a_, reward_sum
 
                 # reset the tmax count

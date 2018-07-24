@@ -69,27 +69,26 @@ class cycleReward(reward.Reward):
             self.cur_ins_iou = scores[target]
             if scores[target] == 0:
                 # do not need to try any more
-                return 0.0, False
+                return 0.0, True
             else:
                 self.cur_ins_index = target
-                return scores[target], True
+                return scores[target], False
         score = self.iou(mask, self.anns[self.cur_ins_index])
         reward = score - self.cur_ins_iou
         self.cur_ins_iou = score
         if score < 0.9 or reward > 0:
             # if iou is low or reward still good
-            return reward, True
+            return reward, False
         else:
             # if iou is good enough and reward starts decline, stop segmentation
             self.cur_ins_index = -1
             self.ann_visit[self.cur_ins_index] = 1
-            return reward, False
+            return reward, True
 
     def get_gt(self):
         if self.cur_ins_index == -1:
             return np.zeros(shape=self.size)
         return self.anns[self.cur_ins_index]
-
 
     def iou(self, mask1, mask2):
         m1 = np.sum(np.where((mask1 == 1) & (mask2 == 1), self.size_ones, self.size_zeros))
@@ -97,7 +96,6 @@ class cycleReward(reward.Reward):
         return m1 * 1.0 / m2
 
 
-import matplotlib.pyplot as plt
 if __name__ == '__main__':
     rw = cycleReward('D:\\Datasets\\cycle')
     rw.size = (768, 768)

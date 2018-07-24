@@ -65,9 +65,13 @@ class ThreadDynamicAdjustment(Thread):
                 self.server.remove_predictor()
 
         cur_len = len(self.server.agents)
+        if Config.PLAY_MODE == 1 & cur_len == 0:
+            cur_len += 1
+            self.server.add_agent(display=True)
+
         if cur_len < self.agent_count:
             for _ in np.arange(cur_len, self.agent_count):
-                self.server.add_agent()
+                self.server.add_agent(display=Config.PLAY_MODE == 2)
         elif cur_len > self.agent_count:
             for _ in np.arange(self.agent_count, cur_len):
                 self.server.remove_agent()
