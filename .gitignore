@@ -113,3 +113,4 @@ basenet/prediction
 train_0/
 train_1/
 model/
+checkpoints/
