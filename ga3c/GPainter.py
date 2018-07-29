@@ -24,7 +24,7 @@ class Painter(object):
             self.dataset = cocoDataSet(args[1])
         elif self.data_type == 'cycle':
             self.reward = cycleReward(args[0])
-            self.reward.size = (128, 128)
+            self.reward.size = (256, 256)
         self.counts = 0
         self.queue = Queue()
 

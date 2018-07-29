@@ -65,7 +65,7 @@ class ThreadDynamicAdjustment(Thread):
                 self.server.remove_predictor()
 
         cur_len = len(self.server.agents)
-        if Config.PLAY_MODE == 1 & cur_len == 0:
+        if Config.PLAY_MODE == 1 and cur_len == 0:
             cur_len += 1
             self.server.add_agent(display=True)
 

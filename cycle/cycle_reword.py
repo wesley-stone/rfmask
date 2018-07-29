@@ -5,6 +5,9 @@ import cv2
 from cycle import cycle_util
 
 
+BETA = 2.0
+LAP = 1.0
+
 class cycleReward(reward.Reward):
 
     def __init__(self, root_path, size=None, shuffle = 1000):
@@ -28,12 +31,14 @@ class cycleReward(reward.Reward):
             self.cur = 0
             self.pool = np.random.choice(self.ids, self.shuffle)
         img_id = self.pool[self.cur]
+        self.cur += 1
         img_path = os.path.join(self.img_path, '%s.jpg'%(str(img_id).zfill(6)))
         self.img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
         ann_path = os.path.join(self.ann_path, '%s.npy'%(str(img_id).zfill(6)))
         self.anns = np.load(ann_path)
         self.ann_cnt = self.anns.shape[0]
         self.ann_visit = np.zeros(self.ann_cnt, dtype=np.int8)
+        self.already_match = 0
 
         if self.size != None:
             self.size_zeros = np.zeros(self.size, dtype=np.float32)
@@ -64,7 +69,7 @@ class cycleReward(reward.Reward):
                 if self.ann_visit[i]:
                     # have visited
                     continue
-                scores.append(self.iou(mask, self.anns[i]))
+                scores.append(self.score(mask, self.anns[i]))
             target = np.argmax(scores)
             self.cur_ins_iou = scores[target]
             if scores[target] == 0:
@@ -74,6 +79,7 @@ class cycleReward(reward.Reward):
                 self.cur_ins_index = target
                 return scores[target], False
         score = self.iou(mask, self.anns[self.cur_ins_index])
+        # print('cur socre %f'%score)
         reward = score - self.cur_ins_iou
         self.cur_ins_iou = score
         if score < 0.9 or reward > 0:
@@ -83,7 +89,9 @@ class cycleReward(reward.Reward):
             # if iou is good enough and reward starts decline, stop segmentation
             self.cur_ins_index = -1
             self.ann_visit[self.cur_ins_index] = 1
-            return reward, True
+            self.already_match += 1
+            print('====================done one=============================')
+            return reward, self.already_match == self.ann_cnt
 
     def get_gt(self):
         if self.cur_ins_index == -1:
@@ -95,6 +103,11 @@ class cycleReward(reward.Reward):
         m2 = np.sum(np.where((mask1 == 0) & (mask2 == 0), self.size_zeros, self.size_ones))
         return m1 * 1.0 / m2
 
+    def score(self, pred, gt):
+        overlap = np.sum(np.where((pred== 1) & (gt== 1), self.size_ones, self.size_zeros))
+        diff = np.sum(np.where((pred == 1) & (gt == 0), self.size_ones, self.size_zeros))
+        total = np.sum(gt)
+        return (overlap - diff*BETA + LAP) / (total+LAP)
 
 if __name__ == '__main__':
     rw = cycleReward('D:\\Datasets\\cycle')

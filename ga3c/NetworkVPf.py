@@ -159,7 +159,8 @@ class NetworkVP:
         with tf.name_scope("unet"):
             output, mid_feature, vars, size, mid_shape = create_conv_net(x, keep_prob, channels, 2, layers,
                                                                          features_root, filter_size, pool_size,
-                                                                         summaries, debug=self.debug)
+                                                                         summaries, x_size=(self.img_height, self.img_width),
+                                                                         debug=self.debug)
             mid_feature = tf.layers.flatten(mid_feature)
             self.origin_output = output
             pred_map = pixel_wise_softmax(output)[..., 1]
