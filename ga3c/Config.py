@@ -81,7 +81,7 @@ class Config:
 
     # Max size of the queue
     MAX_QUEUE_SIZE = 100
-    PREDICTION_BATCH_SIZE = 48
+    PREDICTION_BATCH_SIZE = 32
 
     # Input of the DNN
     STACKED_FRAMES = 2
@@ -115,7 +115,7 @@ class Config:
     # Epsilon (regularize policy lag in GA3C)
     LOG_EPSILON = 1e-6
     # Training min batch size - increasing the batch size increases the stability of the algorithm, but make learning slower
-    TRAINING_MIN_BATCH_SIZE = 48
+    TRAINING_MIN_BATCH_SIZE = 32
     
     #########################################################################
     # Log and save

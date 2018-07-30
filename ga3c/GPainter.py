@@ -31,14 +31,16 @@ class Painter(object):
     def load_resize_img(self, rimg):
         self.size = rimg.shape
         self.observation = np.zeros((2, self.size[0], self.size[1]), np.float32)
-        self.observation[0] = rimg/255.0
+        self.observation[0] = (rimg/255.0)
 
     def step(self, operation):
         if operation is not None:
-            h1, w1 = operation.shape
+            h1, w1, _ = operation.shape
             h_offset, w_offset = (self.size[0]-h1)//2, (self.size[1]-w1)//2
             # copy action
-            self.observation[1, h_offset:-h_offset, w_offset:-w_offset] = operation
+            view = self.observation[1, h_offset:-h_offset, w_offset:-w_offset]
+            self.observation[1, h_offset:-h_offset, w_offset:-w_offset] = \
+                np.where(((view == 1) & (operation[..., 0] == 1)) | ((view == 0) & (operation[..., 1] == 0)), 0, 1)
         r_, done = self.__reward()
         return self.observation, r_, done, 'info'
 

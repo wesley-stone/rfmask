@@ -52,7 +52,6 @@ class NetworkVP:
                                             dtype=tf.float32, name='input_image')  # [none, h, w]
                 self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')  # for dropout
 
-
             # unet with rnn for feature extraction and inference
             mid_feature, len, self.confidence = \
                 self.__unet(self.x, 2, keep_prob=self.keep_prob)
@@ -68,13 +67,7 @@ class NetworkVP:
             '''
             with tf.variable_scope("point_infer"):
                 # random sample from map
-                self.confidence_flatten = tf.layers.flatten(self.confidence, name='conf_flatten')
-                map_shape = tf.shape(self.confidence_flatten)
-                ones = tf.ones(map_shape, dtype=tf.uint8)
-                zeros = tf.zeros(map_shape, dtype=tf.uint8)
-                uniform_sample = tf.random_uniform(map_shape, dtype=tf.float32)
-                mask_tmp = tf.where(uniform_sample < self.confidence_flatten, ones, zeros)
-                self.mask_sample = tf.reshape(mask_tmp, shape=[-1, self.map_size[0], self.map_size[1]])
+                self.__mask_sample()
 
                 v = slim.fully_connected(
                     slim.flatten(mid_feature),
@@ -86,6 +79,35 @@ class NetworkVP:
 
             self.__get_loss()
         return
+
+    def __mask_sample(self):
+        input_mask = tf.layers.flatten(tf.image.crop_to_bounding_box(self.x, self.map_offset[0], self.map_offset[1], self.map_size[0],
+                                                   self.map_size[1])[..., 1])
+        input_mask = tf.layers.flatten(tf.concat([input_mask, 1 - input_mask], axis=-1))
+        self.conf_flatten = tf.layers.flatten(self.confidence, name='conf_flatten')
+        map_shape = tf.shape(self.conf_flatten)
+
+        ones = tf.ones(map_shape, dtype=tf.uint8)
+        zeros = tf.zeros(map_shape, dtype=tf.uint8)
+
+        uniform_sample = tf.random_uniform(map_shape, dtype=tf.float32)
+        sample_mask = tf.where((uniform_sample < self.conf_flatten) & (input_mask != 0), ones, zeros)
+        self.sample_mask = tf.reshape(sample_mask, shape=[-1, self.map_size[0], self.map_size[1], 2])
+
+        '''
+        self.conf_fg = tf.layers.flatten(self.confidence[..., 1], name='conf_flatten_fg')
+        self.conf_bg = tf.layers.flatten(self.confidence[..., 0], name='conf_flatten_bg')
+
+        # foreground sampling, only care about background pixels
+        uniform_sample = tf.random_uniform(map_shape, dtype=tf.float32)
+        mask_fg = tf.where(uniform_sample < self.conf_fg & input_mask == 0, ones, zeros)
+        self.mask_fg = tf.reshape(mask_fg, shape=[-1, self.map_size[0], self.map_size[1]])
+
+        # background sampling, only care about foreground pixels
+        uniform_sample = tf.random_uniform(map_shape, dtype=tf.float32)
+        mask_bg = tf.where(uniform_sample < self.conf_bg & input_mask != 0, ones, zeros)
+        self.mask_bg = tf.reshape(mask_bg, shape=[-1, self.map_size[0], self.map_size[1]])
+        '''
 
     def __train_ops(self):
         if Config.DUAL_RMSPROP:
@@ -135,14 +157,14 @@ class NetworkVP:
 
     def __get_loss(self):
         with tf.variable_scope('loss'):
-            self.actions = tf.placeholder(shape=[None, self.map_size[0], self.map_size[1]], dtype=tf.uint8,
+            self.actions = tf.placeholder(shape=[None, self.map_size[0], self.map_size[1], 2], dtype=tf.uint8,
                                           name='actions')
 
             self.y_r = tf.placeholder(shape=[None,], dtype=tf.float32, name='target_v')
 
-            negate_confidence_flatten = 1 - self.confidence_flatten
-            self.response = tf.where(self.actions == 1, self.confidence_flatten, negate_confidence_flatten)
-            self.responsible_outputs = tf.reduce_sum(tf.log(self.response))
+            negate_conf_flatten = 1 - self.conf_flatten
+            response = tf.where(self.actions == 1, self.conf_flatten, negate_conf_flatten)
+            self.responsible_outputs = tf.reduce_sum(tf.log(response))
 
             # Loss functions
             self.cost_v = tf.reduce_sum(tf.square(self.y_r - self.value), name='value_loss')
@@ -163,13 +185,14 @@ class NetworkVP:
                                                                          debug=self.debug)
             mid_feature = tf.layers.flatten(mid_feature)
             self.origin_output = output
-            pred_map = pixel_wise_softmax(output)[..., 1]
+            pred_map = pixel_wise_softmax(output)
 
         len = int(mid_shape[0] * mid_shape[1] * mid_shape[2])
         self.unet_var_dict = dict()
         for v in vars:
             self.unet_var_dict[v.name] = v
         self.map_size = (size[0], size[1])
+        self.map_offset = ((self.img_height - size[0])//2, (self.img_height - size[1])//2)
         return mid_feature, len, pred_map
 
     def __rnn(self, hidden, len, size=64):
@@ -198,11 +221,11 @@ class NetworkVP:
     def predict_p_and_v(self, x):
         feed_dict = self.__get_base_feed_dict(is_train=False)
         feed_dict.update({self.x: x})
-        conf, sample, value = self.sess.run([self.confidence, self.mask_sample, self.value], feed_dict=feed_dict)
+        conf, actions, value = self.sess.run([self.confidence, self.sample_mask, self.value], feed_dict=feed_dict)
         # save_image(conf, 'img_tmp/conf/confidence_%d.jpg'%self.counts)
         # save_image(sample, 'img_tmp/sample/sample_%d.jpg'%self.counts)
         self.counts += 1
-        return sample, value
+        return actions, value
 
     def __get_base_feed_dict(self, is_train=False):
         prob = Config.KEEP_PROB if is_train else 1.0
